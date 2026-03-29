@@ -39,6 +39,10 @@ export default function ReceiptUploader({
         if (fileInput) {
             fileInput.value = '';
         }
+        const cameraInput = document.getElementById('cameraInput') as HTMLInputElement;
+        if (cameraInput) {
+            cameraInput.value = '';
+        }
         onRemoveImage();
     };
 
@@ -75,15 +79,34 @@ export default function ReceiptUploader({
                         </button>
                     </div>
                 ) : (
-                    <>
+                    <div className="flex flex-col items-center">
                         <div className="text-[32px] mb-3 opacity-50">🧾</div>
-                        <div className="text-[13px] text-[#666]">
-                            <strong className="text-[#c8f060]">Click to upload</strong> or drag & drop
+                        <div className="text-[12px] text-[#666] mb-3">
+                            <strong className="text-[#c8f060]">Open your camera</strong> or drag & drop
+                        </div>
+                        {/*Dual Action Buttons*/}
+                        <div className="flex gap-3 w-full max-w-60 mb-4">
+                            <button
+                                onClick={() => document.getElementById('cameraInput')?.click()}
+                                className="flex-1 bg-[#1e1e1e] border border-[#2a2a2a] hover:border-[#c8f060] hover:text-[#c8f060] text-[#f0f0f0] text-[12px] py-2.5 px-3 rounded-xl transition-all flex flex-col items-center gap-2 group cursor-pointer"
+                            >
+                                <span
+                                    className="text-[18px] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">📸</span>
+                                Camera
+                            </button>
+                            <button
+                                onClick={() => document.getElementById('fileInput')?.click()}
+                                className="flex-1 bg-[#1e1e1e] border border-[#2a2a2a] hover:border-[#c8f060] hover:text-[#c8f060] text-[#f0f0f0] text-[12px] py-2.5 px-3 rounded-xl transition-all flex flex-col items-center gap-2 group cursor-pointer"
+                            >
+                                <span
+                                    className="text-[18px] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">📁</span>
+                                Upload
+                            </button>
                         </div>
                         <div className="text-[11px] text-[#666] mt-2 opacity-60">
                             JPG, PNG, HEIC supported
                         </div>
-                    </>
+                    </div>
                 )}
             </div>
 
@@ -91,6 +114,14 @@ export default function ReceiptUploader({
                 type="file"
                 id="fileInput"
                 accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+            />
+            <input
+                type="file"
+                id="cameraInput"
+                accept="image/*"
+                capture="environment"
                 onChange={handleFileChange}
                 className="hidden"
             />
