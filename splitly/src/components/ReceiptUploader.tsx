@@ -46,6 +46,18 @@ export default function ReceiptUploader({
         onRemoveImage();
     };
 
+    const handleCameraClick = (e: MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('cameraInput')?.click();
+    }
+
+    const handleUploadClick = (e: MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('fileInput')?.click();
+    };
+
     const displayUrl = receiptImageUrl || previewUrl;
 
     return (
@@ -62,7 +74,6 @@ export default function ReceiptUploader({
                         ? 'border-solid border-[#60d4f0] p-0 overflow-hidden'
                         : 'border-dashed border-[#2a2a2a] hover:border-[#c8f060] hover:bg-[#c8f060]/3'
                 }`}
-                onClick={() => !displayUrl && document.getElementById('fileInput')?.click()}
             >
                 {displayUrl ? (
                     <div className="space-y-4">
@@ -87,7 +98,8 @@ export default function ReceiptUploader({
                         {/*Dual Action Buttons*/}
                         <div className="flex gap-3 w-full max-w-60 mb-4">
                             <button
-                                onClick={() => document.getElementById('cameraInput')?.click()}
+                                type="button"
+                                onClick={handleCameraClick}
                                 className="flex-1 bg-[#1e1e1e] border border-[#2a2a2a] hover:border-[#c8f060] hover:text-[#c8f060] text-[#f0f0f0] text-[12px] py-2.5 px-3 rounded-xl transition-all flex flex-col items-center gap-2 group cursor-pointer"
                             >
                                 <span
@@ -95,7 +107,8 @@ export default function ReceiptUploader({
                                 Camera
                             </button>
                             <button
-                                onClick={() => document.getElementById('fileInput')?.click()}
+                                type="button"
+                                onClick={handleUploadClick}
                                 className="flex-1 bg-[#1e1e1e] border border-[#2a2a2a] hover:border-[#c8f060] hover:text-[#c8f060] text-[#f0f0f0] text-[12px] py-2.5 px-3 rounded-xl transition-all flex flex-col items-center gap-2 group cursor-pointer"
                             >
                                 <span
