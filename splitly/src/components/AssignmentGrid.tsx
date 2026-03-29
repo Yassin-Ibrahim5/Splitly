@@ -24,7 +24,7 @@ export default function AssignmentGrid({
             <div
                 className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-[#c8f060] to-transparent opacity-40"/>
 
-            <h2 className="font-['Syne'] font-bold text-[15px] mb-1.5 tracking-tight">
+            <h2 className="font-bold text-[15px] mb-1.5 tracking-tight">
                 Assign Items
             </h2>
             <p className="text-xs text-[#666] mb-5">
@@ -61,7 +61,7 @@ export default function AssignmentGrid({
                                         <button
                                             key={person.id}
                                             onClick={() => onToggleAssignment(item.id, person.id)}
-                                            className={`px-3 py-1.5 rounded-full border text-[11px] cursor-pointer transition-all font-['DM_Mono'] ${
+                                            className={`px-3 py-1.5 rounded-full border text-[11px] cursor-pointer transition-all ${
                                                 isAssigned
                                                     ? 'border-opacity-100 bg-opacity-8'
                                                     : 'border-[#2a2a2a] text-[#666] bg-transparent'

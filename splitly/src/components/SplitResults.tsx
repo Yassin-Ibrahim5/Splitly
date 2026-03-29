@@ -31,7 +31,7 @@ export default function SplitResults({
 
             <div className="flex items-center justify-between mb-5">
                 <div>
-                    <h2 className="font-['Syne'] font-bold text-[15px] mb-0 tracking-tight">
+                    <h2 className="font-bold text-[15px] mb-0 tracking-tight">
                         Final Split
                     </h2>
                     <p className="text-xs text-[#666] mt-1">Who owes what</p>
@@ -62,7 +62,7 @@ export default function SplitResults({
                             }}
                         >
                             <div
-                                className="font-['Syne'] font-bold text-[15px] mb-1"
+                                className="font-bold text-[15px] mb-1"
                                 style={{color}}
                             >
                                 {result.personName}
@@ -71,8 +71,8 @@ export default function SplitResults({
                                 {result.items.length} item{result.items.length !== 1 ? 's' : ''}
                             </div>
 
-                            <div className="font-['Syne'] text-[28px] font-extrabold text-[#c8f060] tracking-tight">
-                <span className="text-sm text-[#666] align-super font-['DM_Mono'] font-normal">
+                            <div className="text-[28px] font-extrabold text-[#c8f060] tracking-tight">
+                <span className="text-sm text-[#666] align-super font-normal">
                   {currency}{' '}
                 </span>
                                 {result.total.toFixed(2)}

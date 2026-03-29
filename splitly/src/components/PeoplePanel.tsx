@@ -41,7 +41,7 @@ export default function PeoplePanel({
     <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-[#c8f060] to-transparent opacity-40" />
 
-      <h2 className="font-['Syne'] font-bold text-[15px] mb-1.5 tracking-tight">People</h2>
+      <h2 className="font-bold text-[15px] mb-1.5 tracking-tight">People</h2>
       <p className="text-xs text-[#666] mb-5">Who&apos;s splitting this bill?</p>
 
       {/* Input Row */}
@@ -52,7 +52,7 @@ export default function PeoplePanel({
           onChange={(e) => setNewPersonName(e.target.value)}
           onKeyDown={handleKeyPress}
           placeholder="Enter a name..."
-          className="flex-1 bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg px-3.5 py-2.5 font-['DM_Mono'] text-[13px] text-[#f0f0f0] outline-none transition-colors focus:border-[#c8f060] placeholder:text-[#666]"
+          className="flex-1 bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg px-3.5 py-2.5 text-[13px] text-[#f0f0f0] outline-none transition-colors focus:border-[#c8f060] placeholder:text-[#666]"
         />
         <button
           onClick={handleAddPerson}

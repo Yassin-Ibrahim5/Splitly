@@ -41,7 +41,7 @@ export default function ReceiptUploader({
             <div
                 className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-[#c8f060] to-transparent opacity-40"/>
 
-            <h2 className="font-['Syne'] font-bold text-[15px] mb-1.5 tracking-tight">Receipt</h2>
+            <h2 className="font-bold text-[15px] mb-1.5 tracking-tight">Receipt</h2>
             <p className="text-xs text-[#666] mb-5">Upload a photo of your receipt to extract items</p>
 
             <div
