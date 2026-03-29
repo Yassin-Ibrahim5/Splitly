@@ -1,154 +1,216 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+interface ExtractedItem {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface ExtractResponse {
+  items: ExtractedItem[];
+  tax: number;
+  tip: number;
+  total: number;
+}
+
+// ---------------------------------------------------------------------------
+// Step 1 — OCR via OCR.space (free, 25k req/month)
+// Default key "helloworld" works. Get your own at https://ocr.space/ocrapi
+// ---------------------------------------------------------------------------
+async function extractTextFromImage(base64: string, mimeType: string): Promise<string> {
+  const apiKey = process.env.OCR_SPACE_API_KEY || "helloworld";
+
+  const form = new FormData();
+  form.append("base64Image", `data:${mimeType};base64,${base64}`);
+  form.append("apikey", apiKey);
+  form.append("OCREngine", "2");       // Engine 2 is better for receipts
+  form.append("isTable", "true");      // Preserve column layout
+  form.append("scale", "true");
+  form.append("detectOrientation", "true");
+
+  const res = await fetch("https://api.ocr.space/parse/image", {
+    method: "POST",
+    body: form,
+  });
+
+  if (!res.ok) throw new Error(`OCR.space error: ${res.statusText}`);
+
+  const data = await res.json();
+
+  if (data.IsErroredOnProcessing) {
+    throw new Error(`OCR processing failed: ${JSON.stringify(data.ErrorMessage)}`);
+  }
+
+  const text: string = data.ParsedResults?.[0]?.ParsedText ?? "";
+  if (!text.trim()) throw new Error("OCR returned no text — try a clearer photo.");
+
+  return text;
+}
+
+// ---------------------------------------------------------------------------
+// Step 2 — Parse OCR text intelligently with Gemini 1.5 Flash (free tier)
+// Get your free API key at: https://aistudio.google.com/app/apikey
+// Free limits: 15 RPM, 1,500 requests/day, 1M tokens/day
+// ---------------------------------------------------------------------------
+async function parseReceiptWithGemini(ocrText: string): Promise<{
+  items: { name: string; price: number }[];
+  tax: number;
+  tip: number;
+  total: number;
+}> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set in your environment variables.");
+
+  const prompt = `You are a receipt parser. Below is raw OCR text extracted from a receipt image.
+Parse it carefully and return structured data about every purchased item.
+
+Return ONLY a raw JSON object — no markdown, no code fences, no explanation whatsoever.
+
+Required JSON shape:
+{
+  "items": [{ "name": "string", "price": number }],
+  "tax": number,
+  "tip": number,
+  "total": number
+}
+
+Rules for "items":
+- Include EVERY food, drink, or product line item on the receipt
+- If the text contains Arabic or another non-English language, translate item names to English
+- If a quantity is shown (e.g. "2x Coffee" or "Pepsi ×3"), keep the quantity in the name
+- Use the line-item total price (unit price × quantity), NOT the unit price alone
+- Do NOT include subtotal, total, tax, VAT, tip, service charge, or discounts in "items"
+
+Rules for other fields:
+- "tax": sum of ALL tax/VAT/service charge lines as a single number (0 if none)
+- "tip": tip or gratuity amount (0 if none)
+- "total": the final grand total shown on the receipt (0 if not visible)
+- All prices must be plain numbers without currency symbols
+
+If you cannot determine a price for an item, omit that item entirely.
+If the text is unreadable, return: {"items":[],"tax":0,"tip":0,"total":0}
+
+OCR TEXT:
+---
+${ocrText}
+---`;
+
+  const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0,         // fully deterministic — we want consistent parsing
+            maxOutputTokens: 2048,
+          },
+        }),
+      }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Gemini API error ${res.status}: ${err}`);
+  }
+
+  const data = await res.json();
+  const raw: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+
+  // Strip accidental markdown fences if the model added them
+  const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
+
+  return JSON.parse(cleaned);
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
-    console.log('[extract] Starting extraction with OCR.space...');
-
     const body = await req.json();
     const imageUrl = body.imageUrl as string | null;
 
     if (!imageUrl) {
-      console.error('[extract] No image URL provided');
-      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+      return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    console.log('[extract] Image URL length:', imageUrl.length);
-
-    // Extract base64 data from data URL
-    const base64Match = imageUrl.match(/^data:image\/(\w+);base64,(.+)$/);
-    if (!base64Match) {
-      console.error('[extract] Invalid image format');
-      return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
+    // Parse the base64 data URL: "data:<mimeType>;base64,<data>"
+    const match = imageUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) {
+      return NextResponse.json(
+          { error: "Invalid image format — expected a base64 data URL" },
+          { status: 400 }
+      );
     }
 
-    const base64 = base64Match[2];
-    console.log('[extract] Base64 data length:', base64.length);
+    const [, mimeType, base64] = match;
 
-    // Use OCR.space free API with free API key (helloworld - 25k requests/month)
-    // Get your own free key at: https://ocr.space/ocrapi
-    const apiKey = process.env.OCR_SPACE_API_KEY || 'helloworld';
-
-    const formData = new FormData();
-    formData.append('base64Image', `data:image/jpeg;base64,${base64}`);
-    formData.append('apikey', apiKey);
-    formData.append('isTable', 'true'); // Enable receipt/table mode
-    formData.append('OCREngine', '2'); // Use engine 2 for better accuracy
-    formData.append('scale', 'true'); // Auto-scale for better results
-    formData.append('detectOrientation', 'true');
-
-    console.log('[extract] Calling OCR.space API with key:', apiKey.substring(0, 5) + '...');
-
-    const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!ocrResponse.ok) {
-      throw new Error(`OCR API failed: ${ocrResponse.statusText}`);
+    // ── Step 1: OCR ──────────────────────────────────────────────────────────
+    let ocrText: string;
+    try {
+      ocrText = await extractTextFromImage(base64, mimeType);
+    } catch (err) {
+      console.error("[extract] OCR failed:", err);
+      return NextResponse.json(
+          {
+            error: "Could not read the receipt image. Try a clearer or better-lit photo.",
+            details: String(err),
+          },
+          { status: 422 }
+      );
     }
 
-    const ocrData = await ocrResponse.json();
-    console.log('[extract] OCR response received');
+    console.log("[extract] OCR text:\n", ocrText);
 
-    if (ocrData.IsErroredOnProcessing) {
-      throw new Error(`OCR processing error: ${ocrData.ErrorMessage}`);
+    // ── Step 2: Parse with Gemini ─────────────────────────────────────────────
+    let parsed: Awaited<ReturnType<typeof parseReceiptWithGemini>>;
+    try {
+      parsed = await parseReceiptWithGemini(ocrText);
+    } catch (err) {
+      console.error("[extract] Gemini parsing failed:", err);
+      return NextResponse.json(
+          {
+            error: "Could not parse receipt items. Check your GEMINI_API_KEY.",
+            details: String(err),
+          },
+          { status: 500 }
+      );
     }
 
-    const extractedText = ocrData.ParsedResults?.[0]?.ParsedText || '';
-    console.log('[extract] Extracted text length:', extractedText.length);
-    console.log('[extract] Extracted text:\n', extractedText);
+    // Attach stable IDs and filter out any zero-price junk
+    const items: ExtractedItem[] = (parsed.items ?? [])
+        .filter((item) => item.name?.trim() && Number(item.price) > 0)
+        .map((item, i) => ({
+          id: `item_${Date.now()}_${i}`,
+          name: item.name.trim(),
+          price: Number(item.price),
+        }));
 
-    // Parse the extracted text to find items and prices
-    const items = parseReceiptText(extractedText);
-    console.log('[extract] Parsed items:', items.length);
-    console.log('[extract] Items:', JSON.stringify(items, null, 2));
+    const response: ExtractResponse = {
+      items,
+      tax:   Number(parsed.tax)   || 0,
+      tip:   Number(parsed.tip)   || 0,
+      total: Number(parsed.total) || 0,
+    };
 
-    const withIDs = items.map((item, index) => ({
-      id: `item_${Date.now()}_${index}`,
-      name: item.name,
-      price: item.price,
-    }));
-
-    console.log('[extract] Returning', withIDs.length, 'items');
-    return NextResponse.json({ items: withIDs });
-  } catch (e) {
-    console.error('[extract] ERROR:', e);
-    const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+    console.log("[extract] Parsed result:", JSON.stringify(response, null, 2));
+    return NextResponse.json(response);
+  } catch (err) {
+    console.error("[extract] Unexpected error:", err);
     return NextResponse.json(
-      { error: 'Failed to extract receipt items', details: errorMessage },
-      { status: 500 }
+        {
+          error: "Failed to extract receipt items",
+          details: err instanceof Error ? err.message : "Unknown error",
+        },
+        { status: 500 }
     );
   }
-}
-
-// Parse OCR text to extract items and prices
-function parseReceiptText(text: string): { name: string; price: number }[] {
-  const items: { name: string; price: number }[] = [];
-  const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
-
-  // Common receipt keywords to skip
-  const skipKeywords = [
-    'subtotal',
-    'total',
-    'tax',
-    'tip',
-    'gratuity',
-    'service charge',
-    'discount',
-    'amount due',
-    'balance',
-    'payment',
-    'change',
-    'cash',
-    'credit',
-    'visa',
-    'mastercard',
-    'amex',
-    'thank you',
-    'receipt',
-    'date',
-    'time',
-    'server',
-    'table',
-    'guest',
-    'order',
-    'invoice',
-  ];
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].toLowerCase();
-
-    // Skip if line contains skip keywords
-    if (skipKeywords.some((keyword) => line.includes(keyword))) {
-      continue;
-    }
-
-    // Try to find price patterns: 123.45, 123,45, $123.45, EGP 123.45, etc.
-    const priceMatch = lines[i].match(/(\d+[.,]\d{2}|\d+\.\d+|\d+)/g);
-
-    if (priceMatch && priceMatch.length > 0) {
-      // Get the last number as the price (usually the rightmost)
-      const priceStr = priceMatch[priceMatch.length - 1];
-      const price = parseFloat(priceStr.replace(',', '.'));
-
-      if (price > 0 && price < 10000) {
-        // Reasonable price range
-        // Extract item name (everything before the price)
-        const nameMatch = lines[i]
-          .replace(/\d+[.,]\d{2}|\d+\.\d+|\d+/g, '')
-          .replace(/[$€£¥₹EGP]/gi, '')
-          .trim();
-
-        if (nameMatch.length > 1) {
-          // Must have at least 2 characters
-          items.push({
-            name: nameMatch,
-            price: price,
-          });
-        }
-      }
-    }
-  }
-
-  return items;
 }
