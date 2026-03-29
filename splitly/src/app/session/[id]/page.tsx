@@ -134,20 +134,14 @@ export default function SessionPage() {
         await updateItems(id, updatedItems);
     };
 
-    const handleAddItem = () => {
-        const name = prompt('Item name:');
-        const priceStr = prompt('Price:');
-        const price = parseFloat(priceStr || '');
-
-        if (name && !isNaN(price)) {
-            const newItem: ReceiptItem = {
-                id: Date.now().toString(),
-                name,
-                price,
-                assignedTo: [],
-            };
-            updateItems(id, [...session.items, newItem]);
+    const handleAddItem = (newItemData : {name: string; price: number}) => {
+        const newItem: ReceiptItem = {
+            id: Date.now().toString(),
+            name: newItemData.name,
+            price: newItemData.price,
+            assignedTo: [],
         }
+        updateItems(id, [...session.items, newItem]).then();
     };
 
     const handleRemoveItem = (itemId: string) => {
@@ -200,6 +194,7 @@ export default function SessionPage() {
                         <ReceiptUploader
                             onImageUpload={handleImageUpload}
                             onExtract={handleExtract}
+                            onRemoveImage={() => updateReceiptImage(id, null)}
                             receiptImageUrl={session.receiptImageUrl}
                             isExtracting={isExtracting}
                             hasExtracted={hasExtracted}

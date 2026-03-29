@@ -1,8 +1,9 @@
 import {ReceiptItem} from '@/types';
+import {useState} from "react";
 
 interface ItemsListProps {
     items: ReceiptItem[];
-    onAddItem: () => void;
+    onAddItem: (item: { name: string; price: number }) => void;
     onEditItem?: (itemId: string) => void;
     onDeleteItem?: (itemId: string) => void;
     currency?: string;
@@ -15,16 +16,32 @@ export default function ItemsList({
                                       currency = 'EGP',
                                       onDeleteItem,
                                   }: ItemsListProps) {
-    if (items.length === 0) {
-        return null;
+    const [isAdding, setIsAdding] = useState(false);
+    const [newItemName, setNewItemName] = useState('');
+    const [newItemPrice, setNewItemPrice] = useState('');
+
+    const handleSaveNewItem = () => {
+        const price = parseFloat(newItemPrice);
+        if (newItemName.trim() && !isNaN(price)) {
+            onAddItem({name: newItemName.trim(), price});
+            setIsAdding(false);
+            setNewItemName('');
+            setNewItemPrice('');
+        }
     }
 
+    const handleCancelAdd = () => {
+        setIsAdding(false);
+        setNewItemName('');
+        setNewItemPrice('');
+    }
     return (
         <div className="mt-5">
             <div className="flex items-center justify-between mb-3">
                 <div className="font-bold text-[13px]">Extracted Items</div>
                 <button
-                    onClick={onAddItem}
+                    onClick={() => setIsAdding(true)}
+                    disabled={isAdding}
                     className="bg-transparent text-[#666] border border-[#2a2a2a] text-[11px] px-3 py-1.5 rounded-lg transition-all hover:border-[#c8f060] hover:text-[#c8f060]"
                 >
                     + Add item
@@ -32,6 +49,55 @@ export default function ItemsList({
             </div>
 
             <div className="flex flex-col gap-2.5">
+                {isAdding && (
+                    <div
+                        className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-[10px] px-3.5 py-3 flex items-center gap-3 transition-colors hover:border-[#333]">
+                        <input
+                            type="text"
+                            placeholder="Item name"
+                            value={newItemName}
+                            onChange={(e) => setNewItemName(e.target.value)}
+                            className="flex-1 bg-transparent text-[13px] text-[#f0f0f0] outline-none placeholder:text-[#666]"
+                            autoFocus
+                        />
+                        <div className="flex items-center gap-1">
+                            <span className="text-[13px] text-[#666]">{currency}</span>
+                            <input
+                                type="text"
+                                placeholder="0.00"
+                                value={newItemPrice}
+                                onChange={(e) => setNewItemPrice(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSaveNewItem();
+                                    if (e.key === 'Escape') handleCancelAdd();
+                                }}
+                                className="w-16 bg-transparent text-[13px] text-[#c8f060] font-medium outline-none text-right placeholder:text-[#666]/50"
+                            />
+                        </div>
+                        <div className="flex gap-1.5 ml-1">
+                            <button
+                                onClick={handleSaveNewItem}
+                                className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/20 border border-[#c8f060]/40 text-[#c8f060] hover:bg-[#c8f060]/30 transition-colors"
+                            >
+                                save
+                            </button>
+                            <button
+                                onClick={handleCancelAdd}
+                                className="text-[10px] px-2 py-0.5 rounded-full bg-transparent border border-[#444] text-[#999] hover:text-[#ccc] transition-colors"
+                            >
+                                cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {items.length === 0 && !isAdding && (
+                    <div
+                        className="text-center py-6 text-[13px] text-[#666] border border-dashed border-[#2a2a2a] rounded-[10px]">
+                        No items yet. Click "+ Add item" to start.
+                    </div>
+                )}
+
                 {items.map((item) => (
                     <div
                         key={item.id}
@@ -51,7 +117,7 @@ export default function ItemsList({
                         )}
                         {onDeleteItem && (
                             <div onClick={() => onDeleteItem(item.id)}
-                                className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap">
+                                 className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap">
                                 delete
                             </div>
                         )}

@@ -1,9 +1,9 @@
-import {ChangeEvent, useState} from 'react';
-
+import {ChangeEvent, MouseEvent, useState} from 'react';
 
 interface ReceiptUploaderProps {
     onImageUpload: (file: File) => void;
     onExtract: () => void;
+    onRemoveImage: () => void;
     receiptImageUrl: string | null;
     isExtracting: boolean;
     hasExtracted: boolean;
@@ -12,6 +12,7 @@ interface ReceiptUploaderProps {
 export default function ReceiptUploader({
                                             onImageUpload,
                                             onExtract,
+                                            onRemoveImage,
                                             receiptImageUrl,
                                             isExtracting,
                                             hasExtracted,
@@ -30,8 +31,15 @@ export default function ReceiptUploader({
         }
     };
 
-    const handleRemoveImage = () => {
+    const handleRemoveImage = (e: MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
         setPreviewUrl(null);
+
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        onRemoveImage();
     };
 
     const displayUrl = receiptImageUrl || previewUrl;
@@ -45,7 +53,7 @@ export default function ReceiptUploader({
             <p className="text-xs text-[#666] mb-5">Upload a photo of your receipt to extract items</p>
 
             <div
-                className={`border-[1.5px] rounded-xl p-9 text-center cursor-pointer transition-all relative ${
+                className={`border-[1.5px] rounded-xl p-9 text-center transition-all relative ${
                     displayUrl
                         ? 'border-solid border-[#60d4f0] p-0 overflow-hidden'
                         : 'border-dashed border-[#2a2a2a] hover:border-[#c8f060] hover:bg-[#c8f060]/3'
@@ -61,7 +69,7 @@ export default function ReceiptUploader({
                         />
                         <button
                             onClick={handleRemoveImage}
-                            className="text-sm text-[#f06060] hover:text-[#ff7070] mt-4"
+                            className="text-sm text-[#f06060] cursor-pointer hover:text-[#ff7070] mt-4"
                         >
                             Remove Image
                         </button>

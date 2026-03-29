@@ -39,7 +39,7 @@ export async function getSession(sessionId: string): Promise<Session | null> {
 }
 
 // Update receipt image URL
-export async function updateReceiptImage(sessionId: string, imageUrl: string): Promise<void> {
+export async function updateReceiptImage(sessionId: string, imageUrl: any): Promise<void> {
     const sessionRef = doc(db, SESSIONS_COLLECTION, sessionId);
     await updateDoc(sessionRef, {
         receiptImageUrl: imageUrl,
