@@ -42,7 +42,7 @@ Splitly lets you photograph a receipt, automatically extract its items using AI,
 ### Installation
 
 ```bash
-git clone https://github.com/Yassin-Ibrahim5/splitly.git
+git clone https://github.com/Yassin-Ibrahim5/Splitly.git
 cd splitly
 npm install
 ```
