@@ -48,7 +48,7 @@ export default function AssignmentGrid({
                                     )}
                                 </div>
                                 <div className="text-[11px] text-[#c8f060] mt-0.5">
-                                    {currency} {item.price.toFixed(2)}
+                                    {currency} {item.price * item.quantity}
                                 </div>
                             </div>
 

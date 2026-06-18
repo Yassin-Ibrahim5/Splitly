@@ -13,7 +13,6 @@ export interface PersonTotal {
 }
 
 export function calculateSplit(items: ReceiptItem[], persons: Person[]): PersonTotal[] {
-    // Initialize totals for each person
     const totals: { [key: string]: PersonTotal } = {};
 
     persons.forEach(person => {
@@ -28,19 +27,20 @@ export function calculateSplit(items: ReceiptItem[], persons: Person[]): PersonT
     // Calculate split for each item
     items.forEach(item => {
         if (item.assignedTo.length > 0) {
-            const splitAmount = item.price / item.assignedTo.length;
+            const splitAmount = (item.price * item.quantity) / item.assignedTo.length;
 
             item.assignedTo.forEach(personId => {
                 if (totals[personId]) {
                     totals[personId].total += splitAmount;
                     totals[personId].items.push({
                         itemName: item.name,
-                        itemPrice: item.price,
+                        itemPrice: item.price * item.quantity,
                         splitWith: item.assignedTo.length,
                         amountOwed: splitAmount,
                     });
                 }
             });
+            console.log(item.price);
         }
     });
 

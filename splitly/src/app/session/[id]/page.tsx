@@ -101,6 +101,7 @@ export default function SessionPage() {
                 id: Date.now().toString() + Math.random(),
                 name: item.name,
                 price: item.price,
+                quantity: item.quantity,
                 assignedTo: [],
             }));
 
@@ -134,11 +135,12 @@ export default function SessionPage() {
         await updateItems(id, updatedItems);
     };
 
-    const handleAddItem = (newItemData : {name: string; price: number}) => {
+    const handleAddItem = (newItemData: { name: string; price: number }) => {
         const newItem: ReceiptItem = {
             id: Date.now().toString(),
             name: newItemData.name,
             price: newItemData.price,
+            quantity: 1,
             assignedTo: [],
         }
         updateItems(id, [...session.items, newItem]).then();
@@ -155,6 +157,13 @@ export default function SessionPage() {
             alert('Session link copied to clipboard!');
         });
     };
+
+    const handleQuantityChange = (itemId: string, quantity: number) => {
+        const updatedItems = session.items.map((item) =>
+            item.id === itemId ? {...item, quantity} : item
+        );
+        updateItems(id, updatedItems).then();
+    }
 
     return (
         <div
@@ -206,6 +215,7 @@ export default function SessionPage() {
                                 items={session.items}
                                 onAddItem={handleAddItem}
                                 onDeleteItem={handleRemoveItem}
+                                onQuantityChange={handleQuantityChange}
                                 currency="EGP"
                             />
                         </div>
@@ -240,7 +250,7 @@ export default function SessionPage() {
                                     className="font-bold text-lg"
                                     style={{fontFamily: "'DM Mono', monospace"}}
                                 >
-                                    EGP {session.items.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
+                                    EGP {session.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
                                 </div>
                             </div>
                             <div>

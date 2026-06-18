@@ -6,6 +6,7 @@ interface ItemsListProps {
     onAddItem: (item: { name: string; price: number }) => void;
     onEditItem?: (itemId: string) => void;
     onDeleteItem?: (itemId: string) => void;
+    onQuantityChange?: (itemId: string, quantity: number) => void;
     currency?: string;
 }
 
@@ -15,11 +16,13 @@ export default function ItemsList({
                                       onEditItem,
                                       currency = 'EGP',
                                       onDeleteItem,
+                                      onQuantityChange,
                                   }: ItemsListProps) {
     const [isAdding, setIsAdding] = useState(false);
     const [newItemName, setNewItemName] = useState('');
     const [newItemPrice, setNewItemPrice] = useState('');
-
+    const [savingWithoutPrice, setSavingWithoutPrice] = useState(false);
+    const [savingWithoutName, setSavingWithoutName] = useState(false);
     const handleSaveNewItem = () => {
         const price = parseFloat(newItemPrice);
         if (newItemName.trim() && !isNaN(price)) {
@@ -27,6 +30,18 @@ export default function ItemsList({
             setIsAdding(false);
             setNewItemName('');
             setNewItemPrice('');
+        }
+        else if (isNaN(price) && !newItemName.trim()){
+            setSavingWithoutName(true);
+            setSavingWithoutPrice(true);
+            console.log("saving without name and price");
+        }
+        else if (isNaN(price)) {
+            setSavingWithoutPrice(true)
+            console.log("saving without price");
+        } else if (!newItemName.trim()) {
+            setSavingWithoutName(true);
+            console.log("saving without name");
         }
     }
 
@@ -104,8 +119,23 @@ export default function ItemsList({
                         className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-[10px] px-3.5 py-3 flex items-center gap-3 transition-colors hover:border-[#333]"
                     >
                         <div className="flex-1 text-[13px] text-[#f0f0f0]">{item.name}</div>
-                        <div className="text-[13px] text-[#c8f060] font-medium min-w-17.5 text-right">
-                            {currency} {item.price.toFixed(2)}
+                        <div className="flex-1 text-[13px] text-[#f0f0f0]">{item.quantity}</div>
+                        <div className="text-[13px] text-[#c8f060] font-medium min-w-17.5 text-right flex gap-2">
+                            <div onClick={() => {
+                                onQuantityChange?.(item.id, (item.quantity > 1 ? item.quantity - 1 : 0))
+                                if (item.quantity === 1) {
+                                    onDeleteItem?.(item.id)
+                                }
+                            }}
+                                 className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap">
+                                -
+                            </div>
+                            {currency} {(item.price) * item.quantity}
+                            <div onClick={() => onQuantityChange?.(item.id, (item.quantity || 0) + 1)}
+                                 className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap">
+                                +
+                            </div>
+
                         </div>
                         {onEditItem && (
                             <div

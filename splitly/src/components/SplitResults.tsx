@@ -87,7 +87,7 @@ export default function SplitResults({
                                         >
                                             <span>{item.itemName}</span>
                                             <span className="text-[#f0f0f0]">
-                        {currency} {item.amountOwed.toFixed(2)}
+                        {currency} {item.amountOwed}
                       </span>
                                         </div>
                                     ))}
