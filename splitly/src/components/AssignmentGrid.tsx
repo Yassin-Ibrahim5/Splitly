@@ -52,7 +52,7 @@ export default function AssignmentGrid({
                                 <div className="text-[11px] text-[#c8f060] mt-0.5">
                                     {currency} {item.price * item.quantity}
                                 </div>
-                                {totalClaimed > item.quantity && (
+                                {item.quantity > 1 && totalClaimed > item.quantity && (
                                     <div className="text-[10px] text-[#f06060] mt-0.5">
                                         Over-assigned!
                                     </div>
@@ -96,7 +96,7 @@ export default function AssignmentGrid({
                                                     : {}
                                             }
                                         >
-                                            {person.name} {qtyAssigned > 1 && `(${qtyAssigned})`}
+                                            {person.name} {item.quantity > 1 && qtyAssigned > 1 && `(${qtyAssigned})`}
                                         </button>
                                     );
                                 })}

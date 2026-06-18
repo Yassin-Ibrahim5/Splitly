@@ -61,6 +61,17 @@ export default function ItemsList({
             setEditingName('');
             setEditingPrice('');
         }
+        else if (isNaN(price) && !editingName.trim()) {
+            setSavingWithoutName(true);
+            setSavingWithoutPrice(true);
+            console.log("saving without name and price");
+        } else if (isNaN(price)) {
+            setSavingWithoutPrice(true)
+            console.log("saving without price");
+        } else if (!editingName.trim()) {
+            setSavingWithoutName(true);
+            console.log("saving without name");
+        }
     }
 
     const handleCancelEdit = () => {
@@ -187,35 +198,38 @@ export default function ItemsList({
                             className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-[10px] px-3.5 py-3 flex items-center gap-3 transition-colors hover:border-[#333]"
                         >
                             <div className="flex-1 text-[13px] text-[#f0f0f0]">{item.name}</div>
-                            <div className="flex-1 text-[13px] text-[#f0f0f0]">{item.quantity}</div>
-                            <div className="text-[13px] text-[#c8f060] font-medium min-w-17.5 text-right flex gap-2">
-                                <div onClick={() => {
-                                    onQuantityChange?.(item.id, (item.quantity > 1 ? item.quantity - 1 : 0))
-                                    if (item.quantity === 1) {
-                                        onDeleteItem?.(item.id)
-                                    }
-                                }}
-                                     className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap">
-                                    -
+                            <div className="text-[13px] text-[#c8f060] font-medium min-w-17.5 text-right flex gap-4">
+                                <div
+                                    className='text-[13px] text-[#c8f060] font-medium min-w-17.5 text-right flex gap-2'>
+                                    <div onClick={() => {
+                                        onQuantityChange?.(item.id, (item.quantity > 1 ? item.quantity - 1 : 0))
+                                        if (item.quantity === 1) {
+                                            onDeleteItem?.(item.id)
+                                        }
+                                    }}
+                                         className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#460809]/75 border border-[#c8f060]/20 text-[#c8f060] hover:text-red-500 transition-all cursor-pointer whitespace-nowrap">
+                                        -
+                                    </div>
+                                    <div className="flex-1 text-[13px] ">{item.quantity}</div>
+                                    <div onClick={() => onQuantityChange?.(item.id, (item.quantity || 0) + 1)}
+                                         className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border hover:bg-[#c8f060]/50 border-[#c8f060]/20 text-[#c8f060] hover:text-black transition-all cursor-pointer whitespace-nowrap">
+                                        +
+                                    </div>
                                 </div>
-                                {currency} {(item.price) * item.quantity}
-                                <div onClick={() => onQuantityChange?.(item.id, (item.quantity || 0) + 1)}
-                                     className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap">
-                                    +
-                                </div>
+                                {currency} {item.price * item.quantity}
 
                             </div>
                             {onEditItem && (
                                 <div
                                     onClick={() => startEditing(item)}
-                                    className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap"
+                                    className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#c8f060]/20 border border-[#c8f060]/20 text-[#c8f060] transition-all cursor-pointer whitespace-nowrap"
                                 >
                                     Edit
                                 </div>
                             )}
                             {onDeleteItem && (
                                 <div onClick={() => onDeleteItem(item.id)}
-                                     className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border border-[#c8f060]/20 text-[#c8f060] cursor-pointer whitespace-nowrap">
+                                     className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#460809]/75 border border-[#c8f060]/20 text-[#c8f060] hover:text-red-500 transition-all cursor-pointer whitespace-nowrap">
                                     Delete
                                 </div>
                             )}
