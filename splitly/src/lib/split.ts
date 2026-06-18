@@ -9,6 +9,7 @@ export interface PersonTotal {
         itemPrice: number;
         splitWith: number;
         amountOwed: number;
+        quantity: number;
     }[];
 }
 
@@ -38,6 +39,7 @@ export function calculateSplit(items: ReceiptItem[], persons: Person[]): PersonT
                         itemPrice: item.price * item.quantity,
                         splitWith: item.assignedTo.length,
                         amountOwed: amountOwed,
+                        quantity: qtyTaken,
                     });
                 }
             });

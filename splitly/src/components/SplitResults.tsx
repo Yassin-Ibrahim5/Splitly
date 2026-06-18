@@ -52,6 +52,8 @@ export default function SplitResults({
                     const breakdown = result.items.slice(0, 3);
                     const hasMore = result.items.length > 3;
 
+                    const totalQuantityTaken = result.items.reduce((sum, item) => sum + item.quantity, 0);
+
                     return (
                         <div
                             key={result.personId}
@@ -85,9 +87,12 @@ export default function SplitResults({
                                             key={idx}
                                             className="flex justify-between text-[11px] text-[#666]"
                                         >
-                                            <span>{item.itemName}</span>
+                                            <span>
+                                                {item.itemName}
+                                                {item.quantity > 1 && (<span className='text-[#666] ml-1'>x{item.quantity}</span>)}
+                                            </span>
                                             <span className="text-[#f0f0f0]">
-                        {currency} {item.amountOwed}
+                        {currency} {item.amountOwed.toFixed(2)}
                       </span>
                                         </div>
                                     ))}
