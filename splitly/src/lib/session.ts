@@ -87,10 +87,11 @@ export async function removePerson(sessionId: string, personId: string): Promise
     const updatedPersons = session.persons.filter(p => p.id !== personId);
 
     // Remove person from all item assignments
-    const updatedItems = session.items.map(item => ({
-        ...item,
-        assignedTo: item.assignedTo.filter(id => id !== personId),
-    }));
+    const updatedItems = session.items.map(item => {
+        const newAssignments = {...item.assignedTo};
+        delete newAssignments[personId];
+        return {...item, assignedTo: newAssignments};
+    });
 
     const sessionRef = doc(db, SESSIONS_COLLECTION, sessionId);
     await updateDoc(sessionRef, {
@@ -104,20 +105,21 @@ export async function removePerson(sessionId: string, personId: string): Promise
 export async function toggleItemAssignment(
     sessionId: string,
     itemId: string,
-    personId: string
+    personId: string,
+    quantityTaken: number
 ): Promise<void> {
     const session = await getSession(sessionId);
     if (!session) throw new Error('Session not found');
 
     const updatedItems = session.items.map(item => {
         if (item.id === itemId) {
-            const isAssigned = item.assignedTo.includes(personId);
-            return {
-                ...item,
-                assignedTo: isAssigned
-                    ? item.assignedTo.filter(id => id !== personId)
-                    : [...item.assignedTo, personId],
-            };
+            const newAssignments = {...item.assignedTo};
+            if (quantityTaken <= 0) {
+                delete newAssignments[personId];
+            } else {
+                newAssignments[personId] = quantityTaken;
+            }
+            return {...item, assignedTo: newAssignments};
         }
         return item;
     });

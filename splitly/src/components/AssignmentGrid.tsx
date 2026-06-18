@@ -3,7 +3,7 @@ import {Person, ReceiptItem} from '@/types';
 interface AssignmentGridProps {
     items: ReceiptItem[];
     persons: Person[];
-    onToggleAssignment: (itemId: string, personId: string) => void;
+    onToggleAssignment: (itemId: string, personId: string, quantityTaken: number) => void;
     currency?: string;
 }
 
@@ -33,7 +33,9 @@ export default function AssignmentGrid({
 
             <div className="grid gap-2.5">
                 {items.map((item) => {
+                    const assignedPersons = Object.keys(item.assignedTo);
                     const splitCount = item.assignedTo.length;
+                    const totalClaimed = Object.values(item.assignedTo).reduce((sum, quantity) => sum + quantity, 0);
 
                     return (
                         <div
@@ -42,7 +44,7 @@ export default function AssignmentGrid({
                         >
                             <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                    <div className="text-[13px] text-[#f0f0f0]">{item.name}</div>
+                                    <div className="text-[13px] text-[#f0f0f0]">{item.name} <span className='text-[#666] text-[11px]'>x {item.quantity}</span></div>
                                     {splitCount > 1 && (
                                         <span className="text-[10px] text-[#666]">÷ {splitCount}</span>
                                     )}
@@ -50,17 +52,35 @@ export default function AssignmentGrid({
                                 <div className="text-[11px] text-[#c8f060] mt-0.5">
                                     {currency} {item.price * item.quantity}
                                 </div>
+                                {totalClaimed > item.quantity && (
+                                    <div className="text-[10px] text-[#f06060] mt-0.5">
+                                        Over-assigned!
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex flex-wrap gap-1.5">
                                 {persons.map((person, index) => {
-                                    const isAssigned = item.assignedTo.includes(person.id);
+                                    const qtyAssigned = item.assignedTo[person.id] || 0;
+                                    const isAssigned = qtyAssigned > 0;
                                     const color = COLORS[index % COLORS.length];
 
+                                    const handleTap = () => {
+                                        let nextQty;
+                                        if (item.quantity === 1) {
+                                            nextQty = isAssigned ? 0 : 1;
+                                        } else {
+                                            nextQty = qtyAssigned + 1;
+                                            if (nextQty > item.quantity) {
+                                                nextQty = 0;
+                                            }
+                                        }
+                                        onToggleAssignment(item.id, person.id, nextQty);
+                                    }
                                     return (
                                         <button
                                             key={person.id}
-                                            onClick={() => onToggleAssignment(item.id, person.id)}
+                                            onClick={handleTap}
                                             className={`px-3 py-1.5 rounded-full border text-[11px] cursor-pointer transition-all ${
                                                 isAssigned
                                                     ? 'border-opacity-100 bg-opacity-8'
@@ -76,7 +96,7 @@ export default function AssignmentGrid({
                                                     : {}
                                             }
                                         >
-                                            {person.name}
+                                            {person.name} {qtyAssigned > 1 && `(${qtyAssigned})`}
                                         </button>
                                     );
                                 })}

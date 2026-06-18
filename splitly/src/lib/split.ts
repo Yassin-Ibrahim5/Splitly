@@ -26,17 +26,18 @@ export function calculateSplit(items: ReceiptItem[], persons: Person[]): PersonT
 
     // Calculate split for each item
     items.forEach(item => {
-        if (item.assignedTo.length > 0) {
-            const splitAmount = (item.price * item.quantity) / item.assignedTo.length;
-
-            item.assignedTo.forEach(personId => {
-                if (totals[personId]) {
-                    totals[personId].total += splitAmount;
+        const assignedIds = Object.keys(item.assignedTo);
+        if (assignedIds.length > 0) {
+            assignedIds.forEach(personId => {
+                const qtyTaken = item.assignedTo[personId];
+                if (totals[personId] && qtyTaken > 0) {
+                    const amountOwed = item.price * qtyTaken;
+                    totals[personId].total += amountOwed;
                     totals[personId].items.push({
                         itemName: item.name,
                         itemPrice: item.price * item.quantity,
                         splitWith: item.assignedTo.length,
-                        amountOwed: splitAmount,
+                        amountOwed: amountOwed,
                     });
                 }
             });
@@ -48,17 +49,17 @@ export function calculateSplit(items: ReceiptItem[], persons: Person[]): PersonT
 }
 
 export function calculateGrandTotal(items: ReceiptItem[]): number {
-    return items.reduce((sum, item) => sum + item.price, 0);
+    return items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 }
 
 export function calculateAssignedTotal(items: ReceiptItem[]): number {
     return items
-        .filter(item => item.assignedTo.length > 0)
-        .reduce((sum, item) => sum + item.price, 0);
+        .filter(item => Object.keys(item.assignedTo).length > 0)
+        .reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
 
 export function calculateUnassignedTotal(items: ReceiptItem[]): number {
     return items
-        .filter(item => item.assignedTo.length === 0)
-        .reduce((sum, item) => sum + item.price, 0);
+        .filter(item => Object.keys(item.assignedTo).length === 0)
+        .reduce((sum, item) => sum + item.price * item.quantity, 0);
 }

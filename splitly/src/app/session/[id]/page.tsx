@@ -51,7 +51,7 @@ export default function SessionPage() {
             ? 1
             : session.persons.length === 0
                 ? 2
-                : session.items.some((item) => item.assignedTo.length > 0)
+                : session.items.some((item) => Object.keys(item.assignedTo).length > 0)
                     ? 4
                     : 3;
 
@@ -102,7 +102,7 @@ export default function SessionPage() {
                 name: item.name,
                 price: item.price,
                 quantity: item.quantity,
-                assignedTo: [],
+                assignedTo: {},
             }));
 
             await updateItems(id, extractedItems);
@@ -123,15 +123,17 @@ export default function SessionPage() {
         await removePerson(id, personId);
     };
 
-    const handleToggleAssignment = async (itemId: string, personId: string) => {
-        await toggleItemAssignment(id, itemId, personId);
+    const handleAssignmentChange = async (itemId: string, personId: string, quantityTaken: number) => {
+        await toggleItemAssignment(id, itemId, personId, quantityTaken);
     };
 
     const handleSplitEvenly = async () => {
-        const updatedItems = session.items.map((item) => ({
-            ...item,
-            assignedTo: session.persons.map((p) => p.id),
-        }));
+        const updatedItems = session.items.map((item) => {
+            const splitQty = item.quantity / session.persons.length;
+            const newAssignments: Record<string, number> = {};
+            session.persons.forEach(p => newAssignments[p.id] = splitQty);
+            return {...item, assignedTo: newAssignments};
+        });
         await updateItems(id, updatedItems);
     };
 
@@ -141,14 +143,14 @@ export default function SessionPage() {
             name: newItemData.name,
             price: newItemData.price,
             quantity: 1,
-            assignedTo: [],
+            assignedTo: {},
         }
         updateItems(id, [...session.items, newItem]).then();
     };
 
     const handleRemoveItem = (itemId: string) => {
         const updatedItems = session.items.filter((item) => item.id !== itemId);
-        updateItems(id, updatedItems);
+        updateItems(id, updatedItems).then();
     }
 
     const handleShare = () => {
@@ -165,6 +167,12 @@ export default function SessionPage() {
         updateItems(id, updatedItems).then();
     }
 
+    const handleEditItem = (itemId: string, newName: string, newPrice: number) => {
+        const updatedItems = session.items.map((item) =>
+            item.id === itemId ? {...item, name: newName, price: newPrice} : item
+        );
+        updateItems(id, updatedItems).then();
+    }
     return (
         <div
             className="min-h-screen bg-[#0d0d0d] text-[#f0f0f0]"
@@ -216,6 +224,7 @@ export default function SessionPage() {
                                 onAddItem={handleAddItem}
                                 onDeleteItem={handleRemoveItem}
                                 onQuantityChange={handleQuantityChange}
+                                onEditItem={handleEditItem}
                                 currency="EGP"
                             />
                         </div>
@@ -235,7 +244,7 @@ export default function SessionPage() {
                         <AssignmentGrid
                             items={session.items}
                             persons={session.persons}
-                            onToggleAssignment={handleToggleAssignment}
+                            onToggleAssignment={handleAssignmentChange}
                             currency="EGP"
                         />
                     )}
@@ -270,7 +279,7 @@ export default function SessionPage() {
                                 >
                                     {session.items.length > 0
                                         ? Math.round(
-                                            (session.items.filter((i) => i.assignedTo.length > 0).length /
+                                            (session.items.filter((i) => Object.keys(i.assignedTo).length > 0).length /
                                                 session.items.length) *
                                             100
                                         )

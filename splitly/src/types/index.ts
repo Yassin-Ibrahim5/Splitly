@@ -5,7 +5,7 @@ export interface ReceiptItem {
     name: string;
     price: number;
     quantity: number;
-    assignedTo: string[]; // Array of person IDs
+    assignedTo: Record<string, number>; // map of person IDs to quantity taken
 }
 
 export interface Person {
