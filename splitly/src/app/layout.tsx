@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     title: "Splitly",
-    description: "Easy to use checkx splitting app",
+    description: "Easy to use check splitting app",
 };
 
 export default function RootLayout({

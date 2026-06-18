@@ -60,8 +60,7 @@ export default function ItemsList({
             setEditingItemId(null);
             setEditingName('');
             setEditingPrice('');
-        }
-        else if (isNaN(price) && !editingName.trim()) {
+        } else if (isNaN(price) && !editingName.trim()) {
             setSavingWithoutName(true);
             setSavingWithoutPrice(true);
             console.log("saving without name and price");
@@ -96,46 +95,47 @@ export default function ItemsList({
                     + Add item
                 </button>
             </div>
-
             <div className="flex flex-col gap-2.5">
                 {isAdding && (
                     <div
-                        className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-[10px] px-3.5 py-3 flex items-center gap-3 transition-colors hover:border-[#333]">
+                        className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-[10px] px-3.5 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 transition-colors hover:border-[#333]">
                         <input
                             type="text"
                             placeholder="Item name"
                             value={newItemName}
                             onChange={(e) => setNewItemName(e.target.value)}
-                            className="flex-1 bg-transparent text-[13px] text-[#f0f0f0] outline-none placeholder:text-[#666]"
+                            className="w-full sm:flex-1 bg-transparent text-[13px] text-[#f0f0f0] outline-none placeholder:text-[#666]"
                             autoFocus
                         />
-                        <div className="flex items-center gap-1">
-                            <span className="text-[13px] text-[#666]">{currency}</span>
-                            <input
-                                type="text"
-                                placeholder="0.00"
-                                value={newItemPrice}
-                                onChange={(e) => setNewItemPrice(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleSaveNewItem();
-                                    if (e.key === 'Escape') handleCancelAdd();
-                                }}
-                                className="w-16 bg-transparent text-[13px] text-[#c8f060] font-medium outline-none text-right placeholder:text-[#666]/50"
-                            />
-                        </div>
-                        <div className="flex gap-1.5 ml-1">
-                            <button
-                                onClick={handleSaveNewItem}
-                                className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/20 border border-[#c8f060]/40 text-[#c8f060] hover:bg-[#c8f060]/30 transition-colors"
-                            >
-                                save
-                            </button>
-                            <button
-                                onClick={handleCancelAdd}
-                                className="text-[10px] px-2 py-0.5 rounded-full bg-transparent border border-[#444] text-[#999] hover:text-[#ccc] transition-colors"
-                            >
-                                cancel
-                            </button>
+                        <div className="flex items-center justify-between w-full sm:w-auto gap-3 sm:gap-1">
+                            <div className="flex items-center gap-1">
+                                <span className="text-[13px] text-[#666]">{currency}</span>
+                                <input
+                                    type="text"
+                                    placeholder="0.00"
+                                    value={newItemPrice}
+                                    onChange={(e) => setNewItemPrice(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleSaveNewItem();
+                                        if (e.key === 'Escape') handleCancelAdd();
+                                    }}
+                                    className="w-16 bg-transparent text-[13px] text-[#c8f060] font-medium outline-none text-right placeholder:text-[#666]/50"
+                                />
+                            </div>
+                            <div className="flex gap-1.5 ml-1">
+                                <button
+                                    onClick={handleSaveNewItem}
+                                    className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/20 border border-[#c8f060]/40 text-[#c8f060] hover:bg-[#c8f060]/30 transition-colors"
+                                >
+                                    save
+                                </button>
+                                <button
+                                    onClick={handleCancelAdd}
+                                    className="text-[10px] px-2 py-0.5 rounded-full bg-transparent border border-[#444] text-[#999] hover:text-[#ccc] transition-colors"
+                                >
+                                    cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -152,41 +152,43 @@ export default function ItemsList({
                         return (
                             <div
                                 key={item.id}
-                                className="bg-[#1e1e1e] border border-[#c8f060]/50 rounded-[10px] px-3.5 py-3 flex items-center gap-3"
+                                className="bg-[#1e1e1e] border border-[#c8f060]/50 rounded-[10px] px-3.5 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3"
                             >
                                 <input
                                     type="text"
                                     value={editingName}
                                     onChange={(e) => setEditingName(e.target.value)}
-                                    className="flex-1 bg-transparent text-[13px] text-[#f0f0f0] outline-none placeholder:text-[#666]"
+                                    className="w-full sm:flex-1 bg-transparent text-[13px] text-[#f0f0f0] outline-none placeholder:text-[#666]"
                                     autoFocus
                                 />
-                                <div className="flex items-center gap-1">
-                                    <span className="text-[13px] text-[#666]">{currency}</span>
-                                    <input
-                                        type="text"
-                                        value={editingPrice}
-                                        onChange={(e) => setEditingPrice(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') handleSaveEdit(item.id);
-                                            if (e.key === 'Escape') handleCancelEdit();
-                                        }}
-                                        className="w-16 bg-transparent text-[13px] text-[#c8f060] font-medium outline-none text-right"
-                                    />
-                                </div>
-                                <div className="flex gap-1.5 ml-1">
-                                    <button
-                                        onClick={() => handleSaveEdit(item.id)}
-                                        className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/20 border border-[#c8f060]/40 text-[#c8f060] hover:bg-[#c8f060]/30 transition-colors"
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={handleCancelEdit}
-                                        className="text-[10px] px-2 py-0.5 rounded-full bg-transparent border border-[#444] text-[#999] hover:text-[#ccc] transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
+                                <div className="flex items-center justify-between w-full sm:w-auto gap-3 sm:gap-1">
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-[13px] text-[#666]">{currency}</span>
+                                        <input
+                                            type="text"
+                                            value={editingPrice}
+                                            onChange={(e) => setEditingPrice(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleSaveEdit(item.id);
+                                                if (e.key === 'Escape') handleCancelEdit();
+                                            }}
+                                            className="w-16 bg-transparent text-[13px] text-[#c8f060] font-medium outline-none text-right"
+                                        />
+                                    </div>
+                                    <div className="flex gap-1.5 ml-1">
+                                        <button
+                                            onClick={() => handleSaveEdit(item.id)}
+                                            className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/20 border border-[#c8f060]/40 text-[#c8f060] hover:bg-[#c8f060]/30 transition-colors"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            onClick={handleCancelEdit}
+                                            className="text-[10px] px-2 py-0.5 rounded-full bg-transparent border border-[#444] text-[#999] hover:text-[#ccc] transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -195,44 +197,51 @@ export default function ItemsList({
                     return (
                         <div
                             key={item.id}
-                            className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-[10px] px-3.5 py-3 flex items-center gap-3 transition-colors hover:border-[#333]"
+                            className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-[10px] px-3.5 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 transition-colors hover:border-[#333]"
                         >
-                            <div className="flex-1 text-[13px] text-[#f0f0f0]">{item.name}</div>
-                            <div className="text-[13px] text-[#c8f060] font-medium min-w-17.5 text-right flex gap-4">
-                                <div
-                                    className='text-[13px] text-[#c8f060] font-medium min-w-17.5 text-right flex gap-2'>
-                                    <div onClick={() => {
-                                        onQuantityChange?.(item.id, (item.quantity > 1 ? item.quantity - 1 : 0))
-                                        if (item.quantity === 1) {
-                                            onDeleteItem?.(item.id)
-                                        }
-                                    }}
-                                         className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#460809]/75 border border-[#c8f060]/20 text-[#c8f060] hover:text-red-500 transition-all cursor-pointer whitespace-nowrap">
-                                        -
-                                    </div>
-                                    <div className="flex-1 text-[13px] ">{item.quantity}</div>
-                                    <div onClick={() => onQuantityChange?.(item.id, (item.quantity || 0) + 1)}
-                                         className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border hover:bg-[#c8f060]/50 border-[#c8f060]/20 text-[#c8f060] hover:text-black transition-all cursor-pointer whitespace-nowrap">
-                                        +
-                                    </div>
-                                </div>
-                                {currency} {item.price * item.quantity}
+                            <div
+                                className="w-full sm:flex-1 text-[13px] text-[#f0f0f0] wrap-break-word">{item.name}</div>
 
+                            <div className="flex items-center justify-between w-full sm:w-auto gap-4 mt-2 sm:mt-0">
+                                <div className="text-[13px] text-[#c8f060] font-medium flex items-center gap-4">
+                                    <div className='flex items-center gap-2'>
+                                        <div onClick={() => {
+                                            onQuantityChange?.(item.id, (item.quantity > 1 ? item.quantity - 1 : 0))
+                                            if (item.quantity === 1) {
+                                                onDeleteItem?.(item.id)
+                                            }
+                                        }}
+                                             className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#460809]/75 border border-[#c8f060]/20 text-[#c8f060] hover:text-red-500 transition-all cursor-pointer whitespace-nowrap">
+                                            -
+                                        </div>
+                                        <div className="text-[13px] w-4 text-center">{item.quantity}</div>
+                                        <div onClick={() => onQuantityChange?.(item.id, (item.quantity || 0) + 1)}
+                                             className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 border hover:bg-[#c8f060]/50 border-[#c8f060]/20 text-[#c8f060] hover:text-black transition-all cursor-pointer whitespace-nowrap">
+                                            +
+                                        </div>
+                                    </div>
+                                    <div className="min-w-16 text-right">
+                                        {currency} {item.price * item.quantity}
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-1.5 shrink-0">
+                                    {onEditItem && (
+                                        <div
+                                            onClick={() => startEditing(item)}
+                                            className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#c8f060]/20 border border-[#c8f060]/20 text-[#c8f060] transition-all cursor-pointer whitespace-nowrap"
+                                        >
+                                            Edit
+                                        </div>
+                                    )}
+                                    {onDeleteItem && (
+                                        <div onClick={() => onDeleteItem(item.id)}
+                                             className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#460809]/75 border border-[#c8f060]/20 text-[#c8f060] hover:text-red-500 transition-all cursor-pointer whitespace-nowrap">
+                                            Delete
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            {onEditItem && (
-                                <div
-                                    onClick={() => startEditing(item)}
-                                    className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#c8f060]/20 border border-[#c8f060]/20 text-[#c8f060] transition-all cursor-pointer whitespace-nowrap"
-                                >
-                                    Edit
-                                </div>
-                            )}
-                            {onDeleteItem && (
-                                <div onClick={() => onDeleteItem(item.id)}
-                                     className="text-[10px] px-2 py-0.5 rounded-full bg-[#c8f060]/8 hover:bg-[#460809]/75 border border-[#c8f060]/20 text-[#c8f060] hover:text-red-500 transition-all cursor-pointer whitespace-nowrap">
-                                    Delete
-                                </div>
-                            )}
                         </div>
                     );
                 })}
