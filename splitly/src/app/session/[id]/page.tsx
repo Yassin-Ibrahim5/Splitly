@@ -18,6 +18,7 @@ import ItemsList from '@/components/ItemsList';
 import PeoplePanel from '@/components/PeoplePanel';
 import AssignmentGrid from '@/components/AssignmentGrid';
 import SplitResults from '@/components/SplitResults';
+import toast from "react-hot-toast";
 
 export default function SessionPage() {
     const params = useParams();
@@ -156,7 +157,7 @@ export default function SessionPage() {
     const handleShare = () => {
         const url = window.location.href;
         navigator.clipboard.writeText(url).then(() => {
-            alert('Session link copied to clipboard!');
+            toast.success('Link copied to clipboard!');
         });
     };
 
