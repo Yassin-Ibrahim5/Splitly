@@ -92,7 +92,8 @@ export default function SessionPage() {
 
                 // Show detailed error to user
                 const errorMsg = errorData.details || errorData.error || 'Unknown error';
-                alert(`Extraction failed: ${errorMsg}\n\nYou can add items manually using the "+ Add item" button.`);
+                toast.error(`Extraction failed: \nYou can add items manually using the "+ Add item" button.`);
+                console.log(errorMsg);
                 setIsExtracting(false);
                 return;
             }
@@ -110,7 +111,7 @@ export default function SessionPage() {
             setHasExtracted(true);
         } catch (error) {
             console.error('Failed to extract items:', error);
-            alert('Failed to extract items from receipt. Use the "+ Add item" button to add items manually.');
+            toast.error('Failed to extract items from receipt. Use the "+ Add item" button to add items manually.');
         } finally {
             setIsExtracting(false);
         }
